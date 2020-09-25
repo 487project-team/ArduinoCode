@@ -1,0 +1,28 @@
+const int RetractButton =2; 
+const int ExtendButton =3;
+const int StopButton =4;
+const int Extend=10;
+const int Retract=9;
+
+void setup() {
+pinMode(RetractButton, INPUT);
+pinMode(ExtendButton, INPUT);
+pinMode(StopButton, INPUT);
+pinMode(Extend, OUTPUT);
+pinMode(Retract,OUTPUT);
+digitalWrite(Extend, LOW);
+digitalWrite(Retract, LOW);
+}
+
+void loop() {
+  if(digitalRead(RetractButton)==HIGH){
+    digitalWrite(Retract, HIGH);
+    digitalWrite(Extend, LOW);}
+if(digitalRead(ExtendButton)==  HIGH){
+    digitalWrite(Retract, LOW);
+    digitalWrite(Extend, HIGH);}
+    if(digitalRead(StopButton)==HIGH){
+    digitalWrite(Retract, LOW);
+    digitalWrite(Extend, LOW);}
+    delay(100);
+}
