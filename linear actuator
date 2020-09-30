@@ -1,7 +1,16 @@
-#define Extend 11  // MC IN2
-#define Retract 10 // MC IN1
-#define pulsepin 9   // MC ENA
-
+#define Extend 11  // MC IN2, forward command
+#define Retract 10 // MC IN1, reverse command
+#define pulsepin 9 // MC ENA, PWM 
+/* CONNECTION
+  MC OUT1/OUT2  -  linear actuator motor
+  12V P/S       -  MC green input
+  Nano +5V pin  -  MC +5V
+  Nano GND      -  MC GND
+  Nano pin 11   -  MC IN2
+  Nano pin 10   -  MC IN1
+  Nano pin 9    -  MC ENA
+  */
+ 
 void setup() {
   Serial.begin(9600);
   Serial.println("Beginning linear actuator Arduino code.");
@@ -13,37 +22,34 @@ void setup() {
   digitalWrite(Retract, LOW);
   Serial.println("Enter E, S, or R to extend, stop, or retract the linear actuator.");
 }
-
 /*     (extend, stop, retract)
    Nano receives motor command from Pi
      E,S,R    example: S = stop
    Nano sends motor status and force to Pi
      (E,S,R),(XX.XXXlbs)
      example: S2000 = stop, 20.00 lbs    */
-
 void loop() {
   if(Serial.available())
   {
     byte RPI = Serial.read();
-    if(RPI == 'S' || RPI == 's'){
-      digitalWrite(Retract, LOW);
-      digitalWrite(Extend, LOW);
-      analogWrite(pulsepin, 0);
-      Serial.println("Stopping linear actuator motor.");
-    }  
-    else if(RPI == 'E' || RPI == 'e'){
+    if(RPI == 'E' || RPI == 'e'){
       digitalWrite(Retract, LOW);
       digitalWrite(Extend, HIGH);
-      analogWrite(pulsepin, 128);
+      analogWrite(pulsepin, 64);
       Serial.println("Extending linear actuator.");
     }
     else if(RPI == 'R' || RPI == 'r'){
       digitalWrite(Retract, HIGH);
       digitalWrite(Extend, LOW);
-      analogWrite(pulsepin, 128);
+      analogWrite(pulsepin, 64);
       Serial.println("Retracting linear actuator.");
     }
-    
+     else{
+      digitalWrite(Retract, LOW);
+      digitalWrite(Extend, LOW);
+      analogWrite(pulsepin, 0);
+      Serial.println("Stopping linear actuator motor.");
+    }
   }
   else{ // if no serial input made, stop motor
     digitalWrite(Retract, LOW);
@@ -51,5 +57,5 @@ void loop() {
     analogWrite(pulsepin, 0);
     Serial.println("No input. Stopping linear actuator motor.");
   }
-    delay(2000);
+  delay(1000);
 }
