@@ -50,11 +50,11 @@ void loop() {
   if(Serial.available()){
     byte limit = Serial.read();
     if(limit == 'L' || limit == 'l'){
-      forcelimit = 1.5;
+      forcelimit = -1.5;
       Serial.println("Low Force Material.");
     }
     else if(limit == 'H' || limit == 'h'){
-      forcelimit = 4.0;
+      forcelimit = -4.0;
       Serial.println("High Force Material.");
     }
   }
@@ -67,7 +67,7 @@ void loop() {
       Serial.println("Extending linear actuator.");
     }
     else if(RPI == 'R' || RPI == 'r'){
-      if (scale.get_units() > forcelimit) {
+      if (scale.get_units() < forcelimit) {
         Serial.println("Cannot retract. Force exceeds allowable limits.");
         goto skipRetract;
       }
