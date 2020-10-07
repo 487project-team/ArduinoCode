@@ -1,0 +1,107 @@
+/*  PUT THIS CODE IN PYTHON:
+    upload this arduino code, then run python program (.py)
+
+    #1/usr/bin/env python3
+    import serial
+
+    ser = serial.Serial('/dev/ttyACM0', 9600)
+    while 1:
+      if(ser.in_waiting >0):
+        line = ser.readline().decode('utf_8')
+        print(line)
+        ser.write(str("HE").encode('utf_8'))
+*/
+
+#include <HX711.h>
+#define Extend 11  // MC IN2, forward command
+#define Retract 10 // MC IN1, reverse command
+#define pulsepin 9 // MC ENA, PWM 
+#define DOUT 3     // HX711 DT, force reading data
+#define CLK 2      // HX711 SCK, force reading trigger
+
+#define calibration_factor -24700 // This value is found using loadcell_calibration.ino
+HX711 scale;
+ 
+String limit = "L"; // 18 lbs H, 1.5 lbs L
+double forcelimit = 1.5;
+byte RPI = 'S';
+int forceoutput = 0;
+  
+void setup() {
+  Serial.begin(9600); // linear actuator setup
+  Serial.println("Beginning force control Arduino code.");
+  pinMode(pulsepin, OUTPUT);
+  pinMode(Extend, OUTPUT);
+  pinMode(Retract, OUTPUT);
+  digitalWrite(Extend, LOW);
+  digitalWrite(Retract, LOW);
+
+  //Serial.println("Ensure load cell has no force on it to zero the scale.");
+  delay(500);
+  scale.begin(DOUT, CLK); // load cell setup
+  scale.set_scale(calibration_factor); //This value is obtained by using the SparkFun_HX711_Calibration sketch
+  scale.tare(); //Assuming there is no weight on the scale at start up, reset the scale to 0
+  //Serial.println("Load cell zeroed.");
+  //Serial.println("Enter E, S, or R to extend, stop, or retract the linear actuator.");
+}
+/*     (extend, stop, retract)
+   Nano receives motor command from Pi
+     E,S,R    example: S = stop
+   Nano sends motor status and force to Pi
+     (E,S,R),(XX.XXXlbs)
+     example: S2000 = stop, 20.00 lbs    */
+     
+void loop() {
+  limit = Serial.readString();
+  if(limit == ""){
+    limit = "LS";
+    }
+  //Serial.println(limit);
+  
+    if(limit[0] == 'H' || limit[0] == 'h'){
+      forcelimit = -4.0;
+      Serial.print('H');
+      }
+    else{
+      forcelimit = -1.5;
+      Serial.print('L');
+      }
+  
+    if(limit[1] == 'E' || limit[1] == 'e'){
+      digitalWrite(Retract, LOW);
+      digitalWrite(Extend, HIGH);
+      analogWrite(pulsepin, 64);
+      Serial.print('E');
+      }
+    else if(limit[1] == 'R' || limit[1] == 'r'){
+      if (scale.get_units() < forcelimit) {
+        //Serial.println("Cannot retract. Force exceeds allowable limits.");
+        goto skipRetract;
+      }
+      digitalWrite(Retract, HIGH);
+      digitalWrite(Extend, LOW);
+      analogWrite(pulsepin, 64);
+      Serial.print('R');
+    }
+     else{
+      skipRetract:
+      digitalWrite(Retract, LOW);
+      digitalWrite(Extend, LOW);
+      analogWrite(pulsepin, 0);
+      Serial.print('S');
+    }
+  
+//  else{ // if no serial input made, stop motor
+//    digitalWrite(Retract, LOW);
+//    digitalWrite(Extend, LOW);
+//    analogWrite(pulsepin, 0);
+//    Serial.println("Stop.");
+//  }
+  
+  //Serial.print("Reading: ");
+  forceoutput = -1000.0*(-0.005);//scale.get_units();
+  Serial.println(forceoutput); //scale.get_units() returns a float
+  //Serial.print(" lbs"); //You can change this to kg but you'll need to refactor the calibration_factor
+  //Serial.println();
+  delay(1000);
+}
