@@ -1,7 +1,7 @@
 /*  PUT THIS CODE IN PYTHON:
     upload this arduino code, then run python program (.py)
 
-    #1/usr/bin/env python3
+    #!/usr/bin/env python3
     import serial
 
     ser = serial.Serial('/dev/ttyACM0', 9600)
