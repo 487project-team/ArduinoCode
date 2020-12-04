@@ -1,17 +1,3 @@
-/*  PUT THIS CODE IN PYTHON:
-    upload this arduino code, then run python program (.py)
-
-    #!/usr/bin/env python3
-    import serial
-
-    ser = serial.Serial('/dev/ttyACM0', 9600)
-    while 1:
-      if(ser.in_waiting >0):
-        line = ser.readline().decode('utf_8')
-        print(line)
-        ser.write(str("HE").encode('utf_8'))
-*/
-
 #include <HX711.h>
 #define Extend 11  // MC IN2, forward command
 #define Retract 10 // MC IN1, reverse command
@@ -24,7 +10,6 @@ HX711 scale;
  
 String limit = "L"; // 18 lbs H, 1.5 lbs L
 double forcelimit = 1.5;
-byte RPI = 'S';
 int forceoutput = 0;
   
 void setup() {
@@ -60,18 +45,18 @@ void loop() {
   
     if(limit[0] == 'H' || limit[0] == 'h'){
       forcelimit = -4.0;
-      Serial.print('H');
+//      Serial.print('H');
       }
     else{
       forcelimit = -1.5;
-      Serial.print('L');
+//      Serial.print('L');
       }
   
     if(limit[1] == 'E' || limit[1] == 'e'){
       digitalWrite(Retract, LOW);
       digitalWrite(Extend, HIGH);
       analogWrite(pulsepin, 64);
-      Serial.print('E');
+      Serial.print("Extend ");
       }
     else if(limit[1] == 'R' || limit[1] == 'r'){
       if (scale.get_units() < forcelimit) {
@@ -81,20 +66,21 @@ void loop() {
       digitalWrite(Retract, HIGH);
       digitalWrite(Extend, LOW);
       analogWrite(pulsepin, 64);
-      Serial.print('R');
+      Serial.print("Retract");
     }
      else{
       skipRetract:
       digitalWrite(Retract, LOW);
       digitalWrite(Extend, LOW);
       analogWrite(pulsepin, 0);
-      Serial.print('S');
+      Serial.print("Stopped");
     }
-  
+  //float testrando = random(0,30000)/1000.0;
   //Serial.print("Reading: ");
-  forceoutput = -1000.0*(scale.get_units()); //outputs in millipounds //scale.get_units();
+  forceoutput = -1.0*(scale.get_units()); //outputs in pounds //scale.get_units();
   Serial.println(forceoutput); //scale.get_units() returns a float
   //Serial.print(" lbs"); //You can change this to kg but you'll need to refactor the calibration_factor
   //Serial.println();
-  delay(1000);
+  
+  //delay(100);
 }
