@@ -11,10 +11,11 @@ HX711 scale;
 String limit = "L"; // 18 lbs H, 1.5 lbs L
 double forcelimit = 1.5;
 int forceoutput = 0;
+int forcePWM = 32;
   
 void setup() {
   Serial.begin(9600); // linear actuator setup
-  Serial.println("Beginning force control Arduino code.");
+  Serial.println("Initiating Arduino");
   pinMode(pulsepin, OUTPUT);
   pinMode(Extend, OUTPUT);
   pinMode(Retract, OUTPUT);
@@ -45,17 +46,19 @@ void loop() {
   
     if(limit[0] == 'H' || limit[0] == 'h'){
       forcelimit = -4.0;
+      forcePWM = 32;
 //      Serial.print('H');
       }
     else{
       forcelimit = -1.5;
+      forcePWM = 64;
 //      Serial.print('L');
       }
   
     if(limit[1] == 'E' || limit[1] == 'e'){
       digitalWrite(Retract, LOW);
       digitalWrite(Extend, HIGH);
-      analogWrite(pulsepin, 64);
+      analogWrite(pulsepin, forcePWM);
       Serial.print("Extend ");
       }
     else if(limit[1] == 'R' || limit[1] == 'r'){
@@ -65,7 +68,7 @@ void loop() {
       }
       digitalWrite(Retract, HIGH);
       digitalWrite(Extend, LOW);
-      analogWrite(pulsepin, 64);
+      analogWrite(pulsepin, forcePWM);
       Serial.print("Retract");
     }
      else{
@@ -75,10 +78,9 @@ void loop() {
       analogWrite(pulsepin, 0);
       Serial.print("Stopped");
     }
-  //float testrando = random(0,30000)/1000.0;
+  //float forceoutput = random(0,30000)/1000.0; //testing serial comm code
   //Serial.print("Reading: ");
-  forceoutput = -1.0*(scale.get_units()); //outputs in pounds //scale.get_units();
-  Serial.println(forceoutput); //scale.get_units() returns a float
+  Serial.println(-1.0*scale.get_units(),3); //scale.get_units() returns a float in pounds
   //Serial.print(" lbs"); //You can change this to kg but you'll need to refactor the calibration_factor
   //Serial.println();
   
